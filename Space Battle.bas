@@ -19,11 +19,11 @@ Type Entity: As Vec2 Position, Velocity: As _Unsigned Integer EXTRA, SafeDistanc
 Dim Shared W, H: W = _DesktopWidth: H = _DesktopHeight: Screen _NewImage(W, H, 32): _FullScreen _SquarePixels
 DefInt A-Z: Randomize Timer
 
-Const Simulation_Distance = 65536
+Const Simulation_Distance = 16384
 Const ShipMaxVelocity = 1000, ShipMinVelocity = 25
 Const EnemyMaxVelocity = 750, EnemyMinVelocity = 50
 Const ShipScale = 2
-Const FPS = 240
+Const FPS = 60
 
 'Resources:
 Dim Shared Resources(1 To 4) As Long
@@ -35,7 +35,7 @@ Resources(4) = load_shooter&
 '----------------
 
 Dim Shared Ship As Entity: Ship.Velocity.Y = 500: Ship.HEALTH = 500 'Velocity and Size of Player's Ship
-Dim Shared Bullets(1 To 10000) As Entity, BULLETID As Integer, BULLET As _Unsigned Long
+Dim Shared Bullets(1 To 1000) As Entity, BULLETID As Integer, BULLET As _Unsigned Long
 Dim Shared Missiles(1 To 1000) As Entity, MISSILEID As Integer, MISSILE As _Unsigned Integer
 Dim Shared Enemies(1 To 250) As Entity, TOTALENEMY As Integer: TOTALENEMY = 1
 Dim Shared EnemyBullets(1 To 10000) As Entity, ENEMYBULLETID As Integer
@@ -161,14 +161,16 @@ Sub Stars (__WORK As _Unsigned _Byte) Static
         Case 0
             __StarCount = Simulation_Distance * 2
             Dim __Stars(1 To __StarCount) As Vec2
+            Dim __Stars_Speed(1 To __StarCount) As _Unsigned _Byte
             For __I = 1 To __StarCount
                 __Stars(__I).X = Rnd * Simulation_Distance * 2 - Simulation_Distance
                 __Stars(__I).Y = Rnd * Simulation_Distance * 2 - Simulation_Distance
+                __Stars_Speed(__I) = Rnd * 64
             Next __I
         Case 1
             VisibleStarCount = 0
             For __I = 1 To __StarCount
-                __Stars(__I).Y = __Stars(__I).Y + Ship.Velocity.Y / FPS
+                __Stars(__I).Y = __Stars(__I).Y + Ship.Velocity.Y / __Stars_Speed(__I) / FPS
                 If __Stars(__I).X > -_Width / 2 And __Stars(__I).X < _Width / 2 And __Stars(__I).Y > -_Height / 2 And __Stars(__I).Y < _Height / 2 Then
                     VisibleStarCount = VisibleStarCount + 1
                     PSet (_Width / 2 + ShipScale * __Stars(__I).X, _Height / 2 + ShipScale * __Stars(__I).Y), _RGB32(255)
@@ -194,6 +196,7 @@ Sub Stars (__WORK As _Unsigned _Byte) Static
             For __I = 1 To __StarCount
                 If __Stars(__I).Y < -_Height Then __Stars(__I).X = Rnd * Simulation_Distance * 2 - Simulation_Distance: __Stars(__I).Y = _Height - Rnd * _Height / 4
                 If __Stars(__I).Y > _Height Then __Stars(__I).X = Rnd * Simulation_Distance * 2 - Simulation_Distance: __Stars(__I).Y = -_Height + Rnd * _Height / 4
+                __Stars_Speed(__I) = Rnd * 64
             Next __I
     End Select
     $Checking:On
